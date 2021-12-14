@@ -12,14 +12,14 @@ import ru.geekbrains.service.CategoryService;
 import ru.geekbrains.service.ProductService;
 import ru.geekbrains.utils.RetrofitUtils;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-
 public abstract class BaseTest {
     static Retrofit client;
     static ProductService productService;
     static CategoryService categoryService;
     Faker faker = new Faker();
     Product product;
+    Product wrongProduct;
+    Product productWithId;
 
     @BeforeAll
     static void beforeAll() {

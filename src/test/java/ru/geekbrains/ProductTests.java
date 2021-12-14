@@ -1,17 +1,22 @@
 package ru.geekbrains;
 
+import org.hamcrest.CoreMatchers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import retrofit2.Response;
 import ru.geekbrains.dto.Product;
 import ru.geekbrains.enums.CategoryType;
+import ru.geekbrains.utils.PrettyLogger;
 
 import java.io.IOException;
+import java.util.ArrayList;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 
 public class ProductTests extends BaseTest {
+    int id = 18463;
+
     @BeforeEach
     void setUp() {
         product = new Product()
@@ -20,18 +25,76 @@ public class ProductTests extends BaseTest {
                 .withCategoryTitle(CategoryType.FURNITURE.getTitle());
     }
 
+    @BeforeEach
+    void setUpNegative() {
+        wrongProduct = new Product()
+                .withId((int) ((Math.random() + 1) * 10))
+                .withTitle(faker.witcher().character())
+                .withPrice((int) ((Math.random() + 1) * 100))
+                .withCategoryTitle(CategoryType.FURNITURE.getTitle());
+    }
+
+    @BeforeEach
+    void setUpModify() {
+        productWithId = new Product()
+                .withId(id)
+                .withTitle(faker.witcher().character())
+                .withPrice((int) ((Math.random() + 1) * 100))
+                .withCategoryTitle(CategoryType.FURNITURE.getTitle());
+    }
+
     @Test
-    void postProductTest() throws IOException {
+    void getProductsPositiveTest() throws IOException {
+        Response<ArrayList<Product>> response = productService.getProducts().execute();
 
-        Response<Product> response = productService.createProduct(product).execute();
-
-        assertThat(response.body().getTitle(), equalTo(product.getTitle()));
-        assertThat(response.body().getPrice(), equalTo(product.getPrice()));
-        assertThat(response.body().getCategoryTitle(), equalTo(product.getCategoryTitle()));
+        assertThat(response.code(), equalTo(200));
     }
 
 
+    @Test
+    void createProductPositiveTest() throws IOException {
+        Response<Product> response = productService.createProduct(product).execute();
+        id = response.body().getId();
 
+        PrettyLogger.DEFAULT.log(response.body().toString());
 
+        assertThat(response.isSuccessful(), CoreMatchers.is(true));
+    }
 
+    @Test
+    void createProductBadRequestTest() throws IOException {
+        Response<Product> response = productService.createProduct(wrongProduct).execute();
+
+        assertThat(response.code(), equalTo(400));
+    }
+
+    @Test
+    void modifyProductPositiveTest() throws IOException {
+        Response<Product> response = productService.modifyProduct(productWithId).execute();
+
+        assertThat(response.isSuccessful(), CoreMatchers.is(true));
+    }
+
+    @Test
+    void modifyProductNegativeTest() throws IOException {
+        Response<Product> response = productService.modifyProduct(wrongProduct).execute();
+
+        assertThat(response.code(), equalTo(400));
+    }
+
+    @Test
+    void getProductPositiveTest() throws IOException {
+        Response<Product> response = productService.modifyProduct(productWithId).execute();
+
+        PrettyLogger.DEFAULT.log(response.body().toString());
+
+        assertThat(response.isSuccessful(), CoreMatchers.is(true));
+    }
+
+    @Test
+    void getProductWithoutIdTest() throws IOException {
+        Response<Product> response = productService.getProduct(0).execute();
+
+        assertThat(response.code(), equalTo(404));
+    }
 }

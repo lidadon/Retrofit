@@ -27,4 +27,14 @@ public class CategoryTest extends BaseTest {
         assertThat(response.body().getId(), equalTo(CategoryType.FURNITURE.getId()));
     }
 
+    @Test
+    void getCategoryByIdNegativeTest() throws IOException {
+        Integer id = 85;
+
+        Response<Category> response = categoryService
+                .getCategory(id)
+                .execute();
+
+        assertThat(response.code(), equalTo(404));
+    }
 }
